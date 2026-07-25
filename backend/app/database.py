@@ -4,7 +4,12 @@ from app.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(settings.DATABASE_URL, echo=settings.DEBUG)
+# Sanitize DATABASE_URL for asyncpg which doesn't support the 'sslmode' query param (expects 'ssl')
+db_url = settings.DATABASE_URL
+if "postgresql+asyncpg://" in db_url and "sslmode=" in db_url:
+    db_url = db_url.replace("sslmode=", "ssl=")
+
+engine = create_async_engine(db_url, echo=settings.DEBUG)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
