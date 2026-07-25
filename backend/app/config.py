@@ -1,5 +1,23 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Annotated, Any
+from pydantic import BeforeValidator
+import json
+
+
+def parse_comma_separated_list(v: Any) -> list[str]:
+    if isinstance(v, str):
+        v_stripped = v.strip()
+        if v_stripped.startswith("[") and v_stripped.endswith("]"):
+            try:
+                return json.loads(v_stripped)
+            except Exception:
+                pass
+        return [item.strip() for item in v_stripped.split(",") if item.strip()]
+    return v
+
+
+CommaSeparatedList = Annotated[list[str], BeforeValidator(parse_comma_separated_list)]
 
 
 class Settings(BaseSettings):
@@ -27,11 +45,11 @@ class Settings(BaseSettings):
     ACCEPT_REMOTE_INDIAN: bool = True
     
     # Job search defaults
-    DEFAULT_KEYWORDS: list[str] = ["product manager", "builder PM", "product lead"]
-    DEFAULT_PORTALS: list[str] = ["linkedin", "naukri", "wellfound", "cutshort", "iimjobs", "hirect", "foundit", "indeed"]
+    DEFAULT_KEYWORDS: CommaSeparatedList = ["product manager", "builder PM", "product lead"]
+    DEFAULT_PORTALS: CommaSeparatedList = ["linkedin", "naukri", "wellfound", "cutshort", "iimjobs", "hirect", "foundit", "indeed"]
     
     # User profile
-    USER_SKILLS: list[str] = []
+    USER_SKILLS: CommaSeparatedList = []
     USER_EXPERIENCE_YEARS: int = 0
     USER_EDUCATION: str = ""
     
