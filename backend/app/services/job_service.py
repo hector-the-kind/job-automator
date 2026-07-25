@@ -40,7 +40,7 @@ async def process_new_job(db: AsyncSession, job_data: dict, user_profile: dict, 
         url=job_data["url"],
         company_url=job_data.get("company_url"),
         posted_at=job_data.get("posted_at"),
-        metadata=job_data.get("metadata", {}),
+        portal_metadata=job_data.get("metadata", {}),
     )
     db.add(job)
     await db.flush()

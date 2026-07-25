@@ -26,7 +26,7 @@ class JobBase(BaseModel):
 class JobCreate(JobBase):
     match_score: Optional[float] = None
     location_match: bool = True
-    metadata: Optional[dict] = {}
+    portal_metadata: Optional[dict] = {}
 
 
 class JobResponse(JobBase):
@@ -35,7 +35,7 @@ class JobResponse(JobBase):
     location_match: bool
     scraped_at: datetime
     is_active: bool
-    metadata: Optional[dict] = {}
+    portal_metadata: Optional[dict] = {}
 
     class Config:
         from_attributes = True

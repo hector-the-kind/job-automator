@@ -50,4 +50,4 @@ class Job(Base):
     location_match: Mapped[bool] = mapped_column(Boolean, default=True)
     
     # Extra portal-specific data
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
+    portal_metadata: Mapped[Optional[dict]] = mapped_column("metadata", JSON, default=dict)
