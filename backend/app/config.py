@@ -1,27 +1,13 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
-from typing import Annotated, Any
-from pydantic import BeforeValidator
+from typing import Any
+from pydantic import field_validator
 import json
-
-
-def parse_comma_separated_list(v: Any) -> list[str]:
-    if isinstance(v, str):
-        v_stripped = v.strip()
-        if v_stripped.startswith("[") and v_stripped.endswith("]"):
-            try:
-                return json.loads(v_stripped)
-            except Exception:
-                pass
-        return [item.strip() for item in v_stripped.split(",") if item.strip()]
-    return v
-
-
-CommaSeparatedList = Annotated[list[str], BeforeValidator(parse_comma_separated_list)]
 
 
 class Settings(BaseSettings):
     APP_NAME: str = "Job Automator"
+    # Set DEBUG to True or False
     DEBUG: bool = True
     
     # Database
@@ -44,18 +30,32 @@ class Settings(BaseSettings):
     PRIMARY_LOCATION: str = "Hyderabad"
     ACCEPT_REMOTE_INDIAN: bool = True
     
-    # Job search defaults
-    DEFAULT_KEYWORDS: CommaSeparatedList = ["product manager", "builder PM", "product lead"]
-    DEFAULT_PORTALS: CommaSeparatedList = ["linkedin", "naukri", "wellfound", "cutshort", "iimjobs", "hirect", "foundit", "indeed"]
+    # Job search defaults (set to Any so pydantic-settings doesn't force JSON-decoding before validation)
+    DEFAULT_KEYWORDS: Any = ["product manager", "builder PM", "product lead"]
+    DEFAULT_PORTALS: Any = ["linkedin", "naukri", "wellfound", "cutshort", "iimjobs", "hirect", "foundit", "indeed"]
     
     # User profile
-    USER_SKILLS: CommaSeparatedList = []
+    USER_SKILLS: Any = []
     USER_EXPERIENCE_YEARS: int = 0
     USER_EDUCATION: str = ""
     
+    @field_validator("DEFAULT_KEYWORDS", "DEFAULT_PORTALS", "USER_SKILLS", mode="before")
+    @classmethod
+    def parse_lists(cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            v_stripped = v.strip()
+            if v_stripped.startswith("[") and v_stripped.endswith("]"):
+                try:
+                    return json.loads(v_stripped)
+                except Exception:
+                    pass
+            return [item.strip() for item in v_stripped.split(",") if item.strip()]
+        return v
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+
 
 
 @lru_cache()
